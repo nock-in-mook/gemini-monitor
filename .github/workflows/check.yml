@@ -20,5 +20,6 @@ jobs:
       - name: Check Gemini models
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GEMINI_MONITOR_BOT_TOKEN: ${{ secrets.GEMINI_MONITOR_BOT_TOKEN }}
+          GEMINI_MONITOR_CHAT_ID: ${{ secrets.GEMINI_MONITOR_CHAT_ID }}
         run: python check_models.py

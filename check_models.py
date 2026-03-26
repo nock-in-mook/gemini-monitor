@@ -20,7 +20,8 @@ MONITORED_MODELS = {
 
 # --- 環境変数 ---
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_TOKEN = os.environ.get("GEMINI_MONITOR_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.environ.get("GEMINI_MONITOR_CHAT_ID", "")
 
 
 def get_available_models():
@@ -86,30 +87,10 @@ def detect_newer_versions(current_model, available_models):
 
 
 def get_telegram_chat_id():
-    """Telegram Bot の getUpdates からチャットIDを取得する"""
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
-    req = urllib.request.Request(url)
-    try:
-        with urllib.request.urlopen(req) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        print(f"Telegram API エラー: {e.code} {e.reason}")
-        raise
-
-    # 最新のメッセージからチャットIDを取得
-    results = data.get("result", [])
-    if not results:
-        print("警告: Telegram の getUpdates にメッセージがありません。Bot にメッセージを送ってください。")
-        return None
-
-    # 最後のメッセージのチャットIDを使う
-    for update in reversed(results):
-        msg = update.get("message") or update.get("channel_post") or {}
-        chat = msg.get("chat", {})
-        chat_id = chat.get("id")
-        if chat_id:
-            return chat_id
-
+    """固定のchat_idを返す（環境変数から取得）"""
+    if TELEGRAM_CHAT_ID:
+        return int(TELEGRAM_CHAT_ID)
+    print("警告: GEMINI_MONITOR_CHAT_ID が設定されていません")
     return None
 
 
@@ -140,7 +121,10 @@ def main():
         print("エラー: GEMINI_API_KEY が設定されていません")
         exit(1)
     if not TELEGRAM_BOT_TOKEN:
-        print("エラー: TELEGRAM_BOT_TOKEN が設定されていません")
+        print("エラー: GEMINI_MONITOR_BOT_TOKEN が設定されていません")
+        exit(1)
+    if not TELEGRAM_CHAT_ID:
+        print("エラー: GEMINI_MONITOR_CHAT_ID が設定されていません")
         exit(1)
 
     print("Gemini モデル一覧を取得中...")
